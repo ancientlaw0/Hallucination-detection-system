@@ -1,0 +1,22 @@
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Uploaded documents and generated data
+data/uploads/
+*.pdf
+
+# Model weights — keep these out of Git
+artifacts/
+*.safetensors
+*.bin
+pytorch_model.bin
+
+# Training outputs
+hallucination_verifier_training/
+checkpoint-*/
+wandb/
