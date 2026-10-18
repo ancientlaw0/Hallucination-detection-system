@@ -5,7 +5,7 @@ import uuid
 
 import faiss
 import numpy as np
-import fitz
+import pymupdf as fitz
 from sentence_transformers import SentenceTransformer
 
 
@@ -22,7 +22,10 @@ class DocumentStore:
         self.encoder = SentenceTransformer(EMBEDDING_MODEL)
         self.index = None
         self.chunks: list[dict[str, Any]] = []
-        self.dimension = self.encoder.get_sentence_embedding_dimension()
+        if hasattr(self.encoder, "get_embedding_dimension"):
+            self.dimension = self.encoder.get_embedding_dimension()
+        else:
+            self.dimension = self.encoder.get_sentence_embedding_dimension()
 
     def _split_text(self, text: str, chunk_size: int = 900, overlap: int = 150):
         text = " ".join(text.split())

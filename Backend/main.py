@@ -3,15 +3,21 @@ import json
 import os
 from pathlib import Path
 import uuid
-from fastapi import UploadFile, File, Form
-from Backend.retrieval import document_store, UPLOAD_DIR
+
+# Avoid OpenMP library conflict between torch and faiss on macOS
+os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 import torch
-from fastapi import FastAPI, HTTPException
+
+from fastapi import UploadFile, File, Form, FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
+from Backend.retrieval import document_store, UPLOAD_DIR
+
 # Locate the project and model directory.
 BASE_DIR = Path(__file__).resolve().parent.parent
+STATIC_DIR = Path(__file__).resolve().parent / "static"
 MODEL_DIR = Path(
     os.getenv(
         "MODEL_DIR",
@@ -59,7 +65,19 @@ class VerifyRequest(BaseModel):
 
 @app.get("/")
 def root():
-    return {"message": "Hallucination Detection API is running"}
+    return {
+        "message": "Hallucination Detection API is running",
+        "ui": "/ui",
+        "docs": "/docs",
+    }
+
+
+@app.get("/ui")
+def ui():
+    index_file = STATIC_DIR / "index.html"
+    if not index_file.exists():
+        raise HTTPException(status_code=404, detail="UI not found")
+    return FileResponse(index_file)
 
 
 @app.get("/health")

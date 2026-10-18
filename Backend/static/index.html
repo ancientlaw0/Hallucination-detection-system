@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hallucination Detection System — Test Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --accent: #a855f7;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 2rem 1rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    header {
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #0284c7;
+      color: #fff;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    textarea, input[type="text"], input[type="file"] {
+      width: 100%;
+      background: #0b1120;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 0.6rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus, input[type="text"]:focus {
+      border-color: var(--primary);
+    }
+
+    textarea { resize: vertical; min-height: 80px; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 640px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .btn {
+      background: var(--primary);
+      color: #0b1120;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.6rem 1.25rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn:hover { background: var(--primary-hover); color: #fff; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: #334155;
+      color: #f8fafc;
+    }
+    .btn-secondary:hover { background: #475569; }
+
+    .btn-sm {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.75rem;
+    }
+
+    .result-box {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      background: #0b1120;
+      border: 1px solid var(--card-border);
+      display: none;
+    }
+
+    .verdict-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    .verdict-hallucination {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--danger);
+      color: #fca5a5;
+    }
+
+    .verdict-clean {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid var(--success);
+      color: #86efac;
+    }
+
+    .prob-bar-container {
+      width: 100%;
+      height: 10px;
+      background: #334155;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin: 0.5rem 0;
+      position: relative;
+    }
+
+    .prob-bar-fill {
+      height: 100%;
+      transition: width 0.4s ease;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.4rem;
+    }
+
+    .warning-note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+      border-top: 1px dashed var(--card-border);
+      padding-top: 0.5rem;
+    }
+
+    .retrieval-item {
+      padding: 0.6rem;
+      border-radius: 0.4rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .quick-examples {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .tag-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: var(--muted);
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.3rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .tag-btn:hover { color: var(--primary); border-color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Hallucination Detection System</h1>
+        <p style="font-size: 0.85rem; color: var(--muted);">Testing & Demonstration Interface (Fine-tuned DeBERTa-base + FAISS RAG)</p>
+      </div>
+      <div id="system-status" class="badge">Checking...</div>
+    </header>
+
+    <!-- SECTION 1: VERIFY -->
+    <div class="card">
+      <div class="card-title">
+        <span>🔎 Response Verifier</span>
+      </div>
+
+      <div class="quick-examples">
+        <span style="font-size: 0.75rem; color: var(--muted); align-self: center;">Pre-fill Example:</span>
+        <button class="tag-btn" onclick="fillExample('hallucination')">⚠️ Hallucination Example</button>
+        <button class="tag-btn" onclick="fillExample('clean')">✅ Faithful Example</button>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label for="evidence-input">Ground Truth Evidence:</label>
+        <textarea id="evidence-input" placeholder="Enter reference text, facts, or document excerpts..."></textarea>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label for="response-input">AI Response to Verify:</label>
+        <textarea id="response-input" placeholder="Enter the AI-generated answer to check for hallucinations..."></textarea>
+      </div>
+
+      <button id="verify-btn" class="btn" onclick="runVerification()">
+        <span>Run Hallucination Check</span>
+      </button>
+
+      <!-- VERIFY RESULTS -->
+      <div id="verify-result" class="result-box">
+        <div id="verdict-banner" class="verdict-banner">
+          <span id="verdict-text">VERDICT</span>
+          <span id="verdict-score" style="font-family: monospace;">0.00%</span>
+        </div>
+
+        <div style="font-size: 0.8rem; color: var(--muted); display: flex; justify-content: space-between;">
+          <span>Hallucination Probability:</span>
+          <span id="prob-val-text">0.00%</span>
+        </div>
+        <div class="prob-bar-container">
+          <div id="prob-fill" class="prob-bar-fill"></div>
+        </div>
+
+        <div class="meta-row">
+          <span>Decision Threshold: <strong id="thresh-val">0.5000</strong></span>
+          <span>Decision Rule: Prob &ge; Threshold &rarr; Flagged</span>
+        </div>
+
+        <div id="warning-text" class="warning-note"></div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: DOCUMENT RAG UPLOAD & SEARCH -->
+    <div class="card">
+      <div class="card-title">
+        <span>📄 Evidence Document Store (RAG)</span>
+      </div>
+
+      <div class="grid-2">
+        <!-- PDF Upload -->
+        <div>
+          <label>1. Upload Reference PDF</label>
+          <input type="file" id="pdf-file-input" accept="application/pdf" style="margin-bottom: 0.5rem;" />
+          <button id="upload-btn" class="btn btn-secondary btn-sm" onclick="uploadPDF()">Upload & Index Chunks</button>
+          <div id="upload-status" style="font-size: 0.8rem; margin-top: 0.4rem; color: var(--muted);"></div>
+        </div>
+
+        <!-- Semantic Search -->
+        <div>
+          <label>2. Search Relevant Evidence</label>
+          <input type="text" id="query-input" placeholder="Search concept or question..." style="margin-bottom: 0.5rem;" />
+          <button id="retrieve-btn" class="btn btn-secondary btn-sm" onclick="runRetrieval()">Semantic Retrieve</button>
+        </div>
+      </div>
+
+      <!-- RETRIEVAL RESULTS -->
+      <div id="retrieval-results" style="margin-top: 1rem; display: none;">
+        <label>Retrieved Evidence Passages:</label>
+        <div id="retrieval-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+
+    // Check system health on load
+    async function checkHealth() {
+      const statusBadge = document.getElementById("system-status");
+      try {
+        const res = await fetch(`${API_BASE}/health`);
+        const data = await res.json();
+        if (data.status === "ok") {
+          statusBadge.innerText = `Online (${data.device.toUpperCase()})`;
+          statusBadge.style.background = "#16a34a";
+        } else {
+          statusBadge.innerText = "Error";
+          statusBadge.style.background = "#dc2626";
+        }
+      } catch (e) {
+        statusBadge.innerText = "Offline";
+        statusBadge.style.background = "#dc2626";
+      }
+    }
+    checkHealth();
+
+    // Pre-fill test samples
+    function fillExample(type) {
+      const ev = document.getElementById("evidence-input");
+      const resp = document.getElementById("response-input");
+      if (type === 'hallucination') {
+        ev.value = "The Eiffel Tower is located in Paris, France. It was built between 1887 and 1889 as the entrance arch for the 1889 World's Fair.";
+        resp.value = "The Eiffel Tower stands in London and was built in 1920 for the Olympic games.";
+      } else {
+        ev.value = "The Eiffel Tower is located in Paris, France. It was built between 1887 and 1889 as the entrance arch for the 1889 World's Fair.";
+        resp.value = "The Eiffel Tower was built in Paris between 1887 and 1889 for the World's Fair.";
+      }
+    }
+
+    // Verify endpoint caller
+    async function runVerification() {
+      const evidence = document.getElementById("evidence-input").value.trim();
+      const response = document.getElementById("response-input").value.trim();
+      const btn = document.getElementById("verify-btn");
+      const resultBox = document.getElementById("verify-result");
+
+      if (!evidence || !response) {
+        alert("Please provide both Evidence and AI Response.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Verifying...";
+
+      try {
+        const res = await fetch(`${API_BASE}/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ evidence, response })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || "Verification failed");
+        }
+
+        const data = await res.json();
+        displayVerification(data);
+      } catch (err) {
+        alert("Verification Error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Run Hallucination Check";
+      }
+    }
+
+    function displayVerification(data) {
+      const resultBox = document.getElementById("verify-result");
+      const banner = document.getElementById("verdict-banner");
+      const verdictText = document.getElementById("verdict-text");
+      const verdictScore = document.getElementById("verdict-score");
+      const probText = document.getElementById("prob-val-text");
+      const fill = document.getElementById("prob-fill");
+      const threshVal = document.getElementById("thresh-val");
+      const warn = document.getElementById("warning-text");
+
+      resultBox.style.display = "block";
+      const probPct = (data.hallucination_probability * 100).toFixed(2);
+      probText.innerText = `${probPct}%`;
+      verdictScore.innerText = `${probPct}%`;
+      fill.style.width = `${probPct}%`;
+      threshVal.innerText = data.threshold;
+      warn.innerText = data.warning;
+
+      if (data.prediction === "potential_hallucination") {
+        banner.className = "verdict-banner verdict-hallucination";
+        verdictText.innerText = "⚠️ POTENTIAL HALLUCINATION DETECTED";
+        fill.style.background = "var(--danger)";
+      } else {
+        banner.className = "verdict-banner verdict-clean";
+        verdictText.innerText = "✅ NO HALLUCINATION DETECTED";
+        fill.style.background = "var(--success)";
+      }
+    }
+
+    // PDF Upload caller
+    async function uploadPDF() {
+      const fileInput = document.getElementById("pdf-file-input");
+      const status = document.getElementById("upload-status");
+      const btn = document.getElementById("upload-btn");
+
+      if (!fileInput.files.length) {
+        alert("Please select a PDF file to upload.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      btn.disabled = true;
+      status.innerText = "Extracting & indexing embeddings...";
+
+      try {
+        const res = await fetch(`${API_BASE}/documents/upload`, {
+          method: "POST",
+          body: formData
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || "Upload failed");
+        }
+
+        const data = await res.json();
+        status.innerHTML = `<span style="color: var(--success);">✓ Indexed ${data.chunks_indexed} passages from "${data.original_filename}"</span>`;
+      } catch (err) {
+        status.innerHTML = `<span style="color: var(--danger);">Upload error: ${err.message}</span>`;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Semantic retrieval caller
+    async function runRetrieval() {
+      const query = document.getElementById("query-input").value.trim();
+      const list = document.getElementById("retrieval-list");
+      const container = document.getElementById("retrieval-results");
+      const btn = document.getElementById("retrieve-btn");
+
+      if (!query) {
+        alert("Please enter a search query.");
+        return;
+      }
+
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/retrieve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query, top_k: 3 })
+        });
+
+        const data = await res.json();
+        list.innerHTML = "";
+
+        if (!data.results || data.results.length === 0) {
+          list.innerHTML = "<div style='color: var(--muted); font-size: 0.85rem;'>No indexed passages found. Please upload a PDF first.</div>";
+        } else {
+          data.results.forEach((item, idx) => {
+            const div = document.createElement("div");
+            div.className = "retrieval-item";
+            div.innerHTML = `
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+                <span style="font-weight: 600; color: var(--primary);">Passage #${idx + 1} (Page ${item.page}, Match: ${(item.similarity * 100).toFixed(1)}%)</span>
+                <button class="tag-btn" onclick="useAsEvidence('${escapeQuotes(item.text)}')">Copy as Evidence &darr;</button>
+              </div>
+              <p style="color: #cbd5e1; line-height: 1.4;">${item.text}</p>
+            `;
+            list.appendChild(div);
+          });
+        }
+
+        container.style.display = "block";
+      } catch (e) {
+        alert("Retrieval error: " + e.message);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function escapeQuotes(str) {
+      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    function useAsEvidence(text) {
+      document.getElementById("evidence-input").value = text;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

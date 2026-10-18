@@ -20,3 +20,7 @@ pytorch_model.bin
 hallucination_verifier_training/
 checkpoint-*/
 wandb/
+
+# Documentation / notes
+EXPLANATION.md
+explanation.md
